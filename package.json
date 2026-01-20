@@ -24,5 +24,8 @@
   "private": false,
   "publishConfig": {
     "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.9"
   }
 }
