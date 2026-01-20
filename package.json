@@ -1,0 +1,28 @@
+{
+  "name": "polymarket-us",
+  "version": "0.0.1",
+  "description": "Polymarket US TypeScript SDK",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write ."
+  },
+  "keywords": [],
+  "author": "Polymarket Team",
+  "license": "MIT",
+  "packageManager": "pnpm@10.28.1",
+  "dependencies": {
+    "typescript": "^5.9.3"
+  },
+  "files": [
+    "dist"
+  ],
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  }
+}
