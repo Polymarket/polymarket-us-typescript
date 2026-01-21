@@ -45,15 +45,8 @@
     "node": ">=18"
   },
   "dependencies": {
-    "@noble/ed25519": "^2.2.3"
-  },
-  "peerDependencies": {
+    "@noble/ed25519": "^2.2.3",
     "ws": "^8.18.0"
-  },
-  "peerDependenciesMeta": {
-    "ws": {
-      "optional": true
-    }
   },
   "files": [
     "dist"
@@ -70,7 +63,6 @@
     "jest": "^30.2.0",
     "ts-jest": "^29.4.6",
     "tsup": "^8.5.1",
-    "typescript": "^5.7.3",
-    "ws": "^8.19.0"
+    "typescript": "^5.7.3"
   }
 }

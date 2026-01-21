@@ -25,6 +25,12 @@ type WebSocketLike = {
 
 const WS_OPEN = 1;
 
+function isBrowser(): boolean {
+  return (
+    typeof window !== 'undefined' && typeof window.document !== 'undefined'
+  );
+}
+
 async function getWebSocketImpl(): Promise<
   new (
     url: string,
@@ -32,28 +38,20 @@ async function getWebSocketImpl(): Promise<
     options?: object,
   ) => WebSocketLike
 > {
-  // Prefer `ws` package as it supports custom headers in handshake
-  // Native WebSocket in Node.js doesn't support headers
-  try {
-    const ws = await import('ws');
-    return ws.default as unknown as new (
-      url: string,
-      protocols?: string[],
-      options?: object,
-    ) => WebSocketLike;
-  } catch {
-    // Fall back to native WebSocket (browsers, or Node 22+ without ws)
-    if (typeof globalThis.WebSocket !== 'undefined') {
-      return globalThis.WebSocket as unknown as new (
-        url: string,
-        protocols?: string[],
-        options?: object,
-      ) => WebSocketLike;
-    }
+  if (isBrowser()) {
     throw new PolymarketUSError(
-      'WebSocket is not available. Install the "ws" package: npm install ws',
+      'WebSocket is not supported in browsers. ' +
+        'The Polymarket US API requires header-based authentication which browser WebSocket cannot send. ' +
+        'Use this SDK in a Node.js environment.',
     );
   }
+
+  const ws = await import('ws');
+  return ws.default as unknown as new (
+    url: string,
+    protocols?: string[],
+    options?: object,
+  ) => WebSocketLike;
 }
 
 export abstract class BaseWebSocket<

@@ -11,6 +11,9 @@ importers:
       '@noble/ed25519':
         specifier: ^2.2.3
         version: 2.3.0
+      ws:
+        specifier: ^8.18.0
+        version: 8.19.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^2.3.11
@@ -36,9 +39,6 @@ importers:
       typescript:
         specifier: ^5.7.3
         version: 5.9.3
-      ws:
-        specifier: ^8.19.0
-        version: 8.19.0
 
 packages:
 
