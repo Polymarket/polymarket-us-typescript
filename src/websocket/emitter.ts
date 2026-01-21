@@ -10,8 +10,8 @@ export type EventParameters<
   EventType extends keyof Events,
 > = Events[EventType] extends (...args: infer P) => unknown ? P : never;
 
-// biome-ignore lint/suspicious/noExplicitAny: complex generics needed for type-safe event emitter
 export class EventEmitter<
+  // biome-ignore lint/suspicious/noExplicitAny: generic event handler signature
   EventTypes extends Record<string, (...args: any[]) => any>,
 > {
   #listeners: {

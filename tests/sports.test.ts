@@ -49,8 +49,8 @@ describe('Sports Endpoints', () => {
         new Response(
           JSON.stringify({
             teams: {
-              'lakers': { id: 1, name: 'Lakers' },
-              'celtics': { id: 2, name: 'Celtics' },
+              lakers: { id: 1, name: 'Lakers' },
+              celtics: { id: 2, name: 'Celtics' },
             },
           }),
           { status: 200 },

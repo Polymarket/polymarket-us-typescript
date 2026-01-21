@@ -157,7 +157,7 @@ describe('HTTP Error Handling', () => {
 
       mockFetch.mockImplementationOnce(
         () =>
-          new Promise((resolve, reject) => {
+          new Promise((_resolve, reject) => {
             setTimeout(() => {
               const error = new Error('The operation was aborted');
               error.name = 'AbortError';

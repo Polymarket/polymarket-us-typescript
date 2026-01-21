@@ -76,15 +76,30 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
 
     if ('orderSubscriptionSnapshot' in message || 'ordersSnapshot' in message) {
       this._emit('orderSnapshot', message as OrderSnapshot);
-    } else if ('orderSubscriptionUpdate' in message || 'orderUpdate' in message) {
+    } else if (
+      'orderSubscriptionUpdate' in message ||
+      'orderUpdate' in message
+    ) {
       this._emit('orderUpdate', message as OrderUpdate);
-    } else if ('positionSubscriptionSnapshot' in message || 'positionsSnapshot' in message) {
+    } else if (
+      'positionSubscriptionSnapshot' in message ||
+      'positionsSnapshot' in message
+    ) {
       this._emit('positionSnapshot', message as PositionSnapshot);
-    } else if ('positionSubscriptionUpdate' in message || 'positionUpdate' in message) {
+    } else if (
+      'positionSubscriptionUpdate' in message ||
+      'positionUpdate' in message
+    ) {
       this._emit('positionUpdate', message as PositionUpdate);
-    } else if ('accountBalanceSubscriptionSnapshot' in message || 'accountBalancesSnapshot' in message) {
+    } else if (
+      'accountBalanceSubscriptionSnapshot' in message ||
+      'accountBalancesSnapshot' in message
+    ) {
       this._emit('accountBalanceSnapshot', message as AccountBalanceSnapshot);
-    } else if ('accountBalanceSubscriptionUpdate' in message || 'accountBalanceUpdate' in message) {
+    } else if (
+      'accountBalanceSubscriptionUpdate' in message ||
+      'accountBalanceUpdate' in message
+    ) {
       this._emit('accountBalanceUpdate', message as AccountBalanceUpdate);
     }
   }
