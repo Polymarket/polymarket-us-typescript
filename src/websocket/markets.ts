@@ -16,6 +16,7 @@ type MarketEventTypes = {
   trade: (data: Trade) => void;
   heartbeat: () => void;
   error: (error: PolymarketUSError | WebSocketError) => void;
+  reconnect: () => void;
   close: () => void;
 };
 
@@ -79,15 +80,5 @@ export class MarketsWebSocket extends BaseWebSocket<MarketEventTypes> {
     } else if ('trade' in message) {
       this._emit('trade', message as Trade);
     }
-  }
-
-  protected handleError(event: unknown): void {
-    const message =
-      event instanceof Error ? event.message : 'WebSocket error occurred';
-    this._emit('error', new PolymarketUSError(message));
-  }
-
-  protected handleClose(): void {
-    this._emit('close');
   }
 }

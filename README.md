@@ -133,6 +133,14 @@ const client = new PolymarketUS({
 
 ### WebSocket (Real-Time Data)
 
+> **Reconnection**: connections automatically reconnect with exponential backoff
+> on unexpected drops, re-sign the auth handshake, and replay every active
+> subscription. A `reconnect` event fires after a successful reconnect. Reconnect
+> stops on fatal auth failures (401/403/429). Disable with `autoReconnect: false`.
+> Note that `order`, `position`, and `trade` streams do not replay history on
+> reconnect; resubscribe to `SUBSCRIPTION_TYPE_ORDER_SNAPSHOT` if you need current
+> open orders, while market data and account balance snapshots are sent automatically.
+
 ```typescript
 import { PolymarketUS } from 'polymarket-us';
 
@@ -267,6 +275,7 @@ marketsWs.close();
 - `accountBalanceSnapshot` - Initial balance
 - `accountBalanceUpdate` - Balance changes
 - `heartbeat` - Connection keepalive
+- `reconnect` - Reconnected and resubscribed after a drop
 - `error` - Error events
 - `close` - Connection closed
 
@@ -275,6 +284,7 @@ marketsWs.close();
 - `marketDataLite` - Lightweight price data
 - `trade` - Trade notifications
 - `heartbeat` - Connection keepalive
+- `reconnect` - Reconnected and resubscribed after a drop
 - `error` - Error events
 - `close` - Connection closed
 

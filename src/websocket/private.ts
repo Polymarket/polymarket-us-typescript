@@ -22,6 +22,7 @@ type PrivateEventTypes = {
   accountBalanceUpdate: (data: AccountBalanceUpdate) => void;
   heartbeat: () => void;
   error: (error: PolymarketUSError | WebSocketError) => void;
+  reconnect: () => void;
   close: () => void;
 };
 
@@ -102,15 +103,5 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
     ) {
       this._emit('accountBalanceUpdate', message as AccountBalanceUpdate);
     }
-  }
-
-  protected handleError(event: unknown): void {
-    const message =
-      event instanceof Error ? event.message : 'WebSocket error occurred';
-    this._emit('error', new PolymarketUSError(message));
-  }
-
-  protected handleClose(): void {
-    this._emit('close');
   }
 }
