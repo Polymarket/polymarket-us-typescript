@@ -171,12 +171,29 @@ describe('WebSocket reconnect & resubscribe', () => {
         };
       });
       const onReconnect = jest.fn();
+      const onClose = jest.fn();
       ws.on('reconnect', onReconnect);
+      ws.on('close', onClose);
 
       await (ws as Internal).reconnect();
 
       expect(onReconnect).not.toHaveBeenCalled();
       expect(socketClose).toHaveBeenCalled();
+      // Closing mid-handshake should still surface a close event.
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    test('connect resets established so a failed reconnect stays quiet', async () => {
+      const ws = new PrivateWebSocket(validOptions);
+      // Leftover from a previous successful session.
+      (ws as Internal).established = true;
+      (ws as Internal).openSocket = jest
+        .fn()
+        .mockRejectedValue(new Error('nope'));
+
+      await expect(ws.connect()).rejects.toBeDefined();
+
+      expect((ws as Internal).established).toBe(false);
     });
   });
 });

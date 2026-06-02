@@ -139,6 +139,9 @@ export abstract class BaseWebSocket<
 
   async connect(): Promise<void> {
     this.closed = false;
+    // Reset before opening so a failed (re)connect doesn't leave a stale
+    // `established` flag that would trigger a background reconnect loop.
+    this.established = false;
     await this.openSocket();
     this.established = true;
     this.emitter._emit('open');
@@ -210,6 +213,8 @@ export abstract class BaseWebSocket<
       ) {
         await sleep(reconnectDelayMs(attempt));
         if (this.closed) {
+          // Closed during backoff: surface the close like any other teardown.
+          this.emitter._emit('close');
           return;
         }
         try {
@@ -232,6 +237,7 @@ export abstract class BaseWebSocket<
         if (this.closed) {
           this.socket?.close(1000, 'OK');
           this.socket = null;
+          this.emitter._emit('close');
           return;
         }
         this.resubscribe();
