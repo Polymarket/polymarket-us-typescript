@@ -19,17 +19,19 @@ export async function* paginateOffset<T>(
   itemsKey: string,
   pageSize: number = DEFAULT_PAGE_SIZE,
 ): AsyncGenerator<T> {
+  // Clamp so a non-positive page size cannot spin forever (offset never advances).
+  const size = Math.max(1, pageSize);
   let offset = 0;
   for (;;) {
-    const page = await fetchPage(offset, pageSize);
+    const page = await fetchPage(offset, size);
     const items = (page[itemsKey] as T[] | undefined) ?? [];
     for (const item of items) {
       yield item;
     }
-    if (items.length < pageSize) {
+    if (items.length < size) {
       return;
     }
-    offset += pageSize;
+    offset += size;
   }
 }
 

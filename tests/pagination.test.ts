@@ -30,6 +30,21 @@ describe('Pagination', () => {
       expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 
+    test('terminates when page size is non-positive', async () => {
+      mockFetch
+        .mockResolvedValueOnce(jsonResponse({ events: [{ id: 1 }] }))
+        .mockResolvedValueOnce(jsonResponse({ events: [] }));
+      const client = new PolymarketUS();
+
+      const ids: number[] = [];
+      for await (const event of client.events.iterate(undefined, 0)) {
+        ids.push(event.id);
+      }
+
+      expect(ids).toEqual([1]);
+      expect(mockFetch).toHaveBeenCalledTimes(2);
+    });
+
     test('stops on an empty page', async () => {
       mockFetch
         .mockResolvedValueOnce(
