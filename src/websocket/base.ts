@@ -62,7 +62,9 @@ function sleep(ms: number): Promise<void> {
  */
 function upgradeStatus(error: unknown): number | undefined {
   const message = error instanceof Error ? error.message : String(error);
-  const match = message.match(/\b(\d{3})\b/);
+  // Match only the `ws` upgrade-failure format so an incidental 3-digit number
+  // (a port, a timeout, etc.) is not misread as a fatal auth status.
+  const match = message.match(/unexpected server response:\s*(\d{3})/i);
   return match ? Number(match[1]) : undefined;
 }
 
@@ -111,6 +113,12 @@ export abstract class BaseWebSocket<
   private readonly reconnectMaxAttempts?: number;
   private readonly subscriptions = new Map<string, TrackedSubscription>();
   private closed = false;
+  // True only after a connection has successfully opened, so an initial connect
+  // failure does not trigger background reconnects.
+  private established = false;
+  // True while a reconnect loop is running, so a failed attempt's own `close`
+  // event does not spawn a second, parallel loop.
+  private reconnecting = false;
 
   constructor(options: WebSocketOptions, path: string) {
     super();
@@ -132,6 +140,7 @@ export abstract class BaseWebSocket<
   async connect(): Promise<void> {
     this.closed = false;
     await this.openSocket();
+    this.established = true;
     this.emitter._emit('open');
   }
 
@@ -170,8 +179,17 @@ export abstract class BaseWebSocket<
   }
 
   private onClose(): void {
+    // A failed reconnect attempt's socket also fires `close`; ignore it so we
+    // don't spawn a second, parallel reconnect loop.
+    if (this.reconnecting) {
+      return;
+    }
     if (this.closed) {
       this.emitter._emit('close');
+      return;
+    }
+    // An initial connect failure is surfaced via the rejected connect() promise.
+    if (!this.established) {
       return;
     }
     if (!this.autoReconnect) {
@@ -182,36 +200,51 @@ export abstract class BaseWebSocket<
   }
 
   private async reconnect(): Promise<void> {
-    let attempt = 0;
-    while (
-      !this.closed &&
-      (this.reconnectMaxAttempts === undefined ||
-        attempt < this.reconnectMaxAttempts)
-    ) {
-      await sleep(reconnectDelayMs(attempt));
-      if (this.closed) {
-        return;
-      }
-      try {
-        await this.openSocket();
-      } catch (error) {
-        const status = upgradeStatus(error);
-        if (status !== undefined && FATAL_AUTH_STATUSES.has(status)) {
-          this.emitter._emit(
-            'error',
-            new PolymarketUSError(`WebSocket auth failed (${status})`),
-          );
-          this.emitter._emit('close');
+    this.reconnecting = true;
+    try {
+      let attempt = 0;
+      while (
+        !this.closed &&
+        (this.reconnectMaxAttempts === undefined ||
+          attempt < this.reconnectMaxAttempts)
+      ) {
+        await sleep(reconnectDelayMs(attempt));
+        if (this.closed) {
           return;
         }
-        attempt++;
-        continue;
+        try {
+          await this.openSocket();
+        } catch (error) {
+          const status = upgradeStatus(error);
+          if (status !== undefined && FATAL_AUTH_STATUSES.has(status)) {
+            this.established = false;
+            this.emitter._emit(
+              'error',
+              new PolymarketUSError(`WebSocket auth failed (${status})`),
+            );
+            this.emitter._emit('close');
+            return;
+          }
+          attempt++;
+          continue;
+        }
+        // The user may have called close() while the upgrade was in flight.
+        if (this.closed) {
+          this.socket?.close(1000, 'OK');
+          this.socket = null;
+          return;
+        }
+        this.resubscribe();
+        this.emitter._emit('reconnect');
+        return;
       }
-      this.emitter._emit('reconnect');
-      this.resubscribe();
-      return;
+      // Exhausted attempts: connection is no longer established, so a late
+      // `close` from a failed socket won't restart reconnection.
+      this.established = false;
+      this.emitter._emit('close');
+    } finally {
+      this.reconnecting = false;
     }
-    this.emitter._emit('close');
   }
 
   private resubscribe(): void {

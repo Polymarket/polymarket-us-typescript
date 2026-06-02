@@ -101,4 +101,82 @@ describe('WebSocket reconnect & resubscribe', () => {
       expect(onClose).toHaveBeenCalledTimes(1);
     });
   });
+
+  describe('onClose guard', () => {
+    test('does not start a second loop while already reconnecting', () => {
+      const ws = new PrivateWebSocket(validOptions);
+      (ws as Internal).established = true;
+      (ws as Internal).reconnecting = true;
+      const spy = jest.fn();
+      (ws as Internal).reconnect = spy;
+
+      (ws as Internal).onClose();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    test('does not reconnect before the first successful connect', () => {
+      const ws = new PrivateWebSocket(validOptions);
+      (ws as Internal).established = false;
+      const spy = jest.fn();
+      (ws as Internal).reconnect = spy;
+
+      (ws as Internal).onClose();
+
+      expect(spy).not.toHaveBeenCalled();
+    });
+
+    test('reconnects after an established connection drops', () => {
+      const ws = new PrivateWebSocket(validOptions);
+      (ws as Internal).established = true;
+      (ws as Internal).reconnecting = false;
+      const spy = jest.fn();
+      (ws as Internal).reconnect = spy;
+
+      (ws as Internal).onClose();
+
+      expect(spy).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('reconnect edge cases', () => {
+    test('does not treat an incidental 3-digit number as fatal auth', async () => {
+      const ws = new PrivateWebSocket({
+        ...validOptions,
+        reconnectMaxAttempts: 1,
+      });
+      (ws as Internal).openSocket = jest
+        .fn()
+        .mockRejectedValue(new Error('timeout after 401 ms'));
+      const onError = jest.fn();
+      const onClose = jest.fn();
+      ws.on('error', onError);
+      ws.on('close', onClose);
+
+      await (ws as Internal).reconnect();
+
+      expect(onError).not.toHaveBeenCalled();
+      expect(onClose).toHaveBeenCalledTimes(1);
+    });
+
+    test('does not resurrect a connection closed mid-handshake', async () => {
+      const ws = new PrivateWebSocket(validOptions);
+      const socketClose = jest.fn();
+      (ws as Internal).openSocket = jest.fn().mockImplementation(async () => {
+        (ws as Internal).closed = true;
+        (ws as Internal).socket = {
+          readyState: 1,
+          send: jest.fn(),
+          close: socketClose,
+        };
+      });
+      const onReconnect = jest.fn();
+      ws.on('reconnect', onReconnect);
+
+      await (ws as Internal).reconnect();
+
+      expect(onReconnect).not.toHaveBeenCalled();
+      expect(socketClose).toHaveBeenCalled();
+    });
+  });
 });
