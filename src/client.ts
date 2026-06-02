@@ -206,11 +206,19 @@ export class PolymarketUS {
       clearTimeout(timeoutId);
 
       if (response.ok) {
-        const text = await response.text();
-        if (!text) {
-          return {} as T;
+        try {
+          const text = await response.text();
+          if (!text) {
+            return {} as T;
+          }
+          return JSON.parse(text) as T;
+        } catch (error) {
+          const message =
+            error instanceof Error
+              ? error.message
+              : 'Failed to parse response body';
+          throw new APIError(0, message, { requestId: correlationId });
         }
-        return JSON.parse(text) as T;
       }
 
       if (
@@ -234,7 +242,12 @@ export class PolymarketUS {
     response: Response,
     correlationId: string,
   ): Promise<never> {
-    const text = await response.text();
+    let text: string;
+    try {
+      text = await response.text();
+    } catch {
+      text = '';
+    }
     let message: string;
     let body: unknown;
     try {

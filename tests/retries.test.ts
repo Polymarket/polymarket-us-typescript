@@ -1,9 +1,10 @@
 import {
-  type APIError,
+  APIError,
   BadRequestError,
   InternalServerError,
   PolymarketUS,
 } from '../src';
+import { backoffDelayMs } from '../src/retry';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as jest.Mock;
@@ -102,5 +103,23 @@ describe('Retries', () => {
     >;
     expect(headers['User-Agent']).toBe('polymarket-us-typescript');
     expect(headers['poly-correlation-id']).toBeTruthy();
+  });
+
+  test('wraps a malformed success body in APIError', async () => {
+    mockFetch.mockResolvedValueOnce(new Response('not json{', { status: 200 }));
+    const client = new PolymarketUS({ maxRetries: 0 });
+
+    try {
+      await client.events.list();
+      fail('Expected error to be thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(APIError);
+      expect((error as APIError).status).toBe(0);
+    }
+  });
+
+  test('clamps Retry-After to the backoff ceiling', () => {
+    expect(backoffDelayMs(0, 3_600_000)).toBe(8000);
+    expect(backoffDelayMs(0, Number.POSITIVE_INFINITY)).toBe(8000);
   });
 });

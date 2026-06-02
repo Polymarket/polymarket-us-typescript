@@ -26,7 +26,8 @@ export function canRetryMethod(method: string): boolean {
 
 export function backoffDelayMs(attempt: number, retryAfterMs?: number): number {
   if (retryAfterMs !== undefined && retryAfterMs >= 0) {
-    return retryAfterMs;
+    // Clamp so a hostile or malformed Retry-After cannot block indefinitely.
+    return Math.min(retryAfterMs, BACKOFF_MAX_MS);
   }
   const capped = Math.min(BACKOFF_INITIAL_MS * 2 ** attempt, BACKOFF_MAX_MS);
   return capped / 2 + Math.random() * (capped / 2);
