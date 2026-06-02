@@ -226,6 +226,9 @@ export class PolymarketUS {
         canRetryMethod(method) &&
         attempt < this.maxRetries
       ) {
+        // Release the connection back to the pool before retrying; an
+        // unconsumed body keeps the underlying socket open under undici.
+        await response.body?.cancel().catch(() => undefined);
         const retryAfter = parseRetryAfterMs(
           response.headers.get('Retry-After'),
         );

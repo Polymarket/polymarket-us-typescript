@@ -35,6 +35,22 @@ describe('Retries', () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
+  test('cancels the response body before retrying', async () => {
+    const errorResponse = new Response('err', { status: 500 });
+    const cancelSpy = jest.spyOn(
+      errorResponse.body as ReadableStream,
+      'cancel',
+    );
+    mockFetch
+      .mockResolvedValueOnce(errorResponse)
+      .mockResolvedValueOnce(jsonResponse(200, { events: [] }));
+    const client = new PolymarketUS();
+
+    await client.events.list();
+
+    expect(cancelSpy).toHaveBeenCalled();
+  });
+
   test('exhausts retries and throws', async () => {
     mockFetch.mockResolvedValue(jsonResponse(503));
     const client = new PolymarketUS({ maxRetries: 2 });
