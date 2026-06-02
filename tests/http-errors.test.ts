@@ -16,7 +16,7 @@ describe('HTTP Error Handling', () => {
 
   beforeEach(() => {
     mockFetch.mockReset();
-    client = new PolymarketUS();
+    client = new PolymarketUS({ maxRetries: 0 });
   });
 
   describe('JSON error responses', () => {
@@ -153,7 +153,7 @@ describe('HTTP Error Handling', () => {
 
   describe('Timeout handling', () => {
     test('should throw APIError on timeout', async () => {
-      const client = new PolymarketUS({ timeout: 50 });
+      const client = new PolymarketUS({ timeout: 50, maxRetries: 0 });
 
       mockFetch.mockImplementationOnce(
         () =>
@@ -176,7 +176,7 @@ describe('HTTP Error Handling', () => {
     });
 
     test('should succeed within timeout', async () => {
-      const client = new PolymarketUS({ timeout: 200 });
+      const client = new PolymarketUS({ timeout: 200, maxRetries: 0 });
 
       mockFetch.mockImplementationOnce(
         () =>

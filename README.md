@@ -127,8 +127,32 @@ try {
 const client = new PolymarketUS({
   keyId: 'your-key-id',
   secretKey: 'your-secret-key',
-  timeout: 30000,  // Request timeout in ms (default: 30000)
+  timeout: 30000,   // Request timeout in ms (default: 30000)
+  maxRetries: 2,    // Automatic retries for idempotent requests (default: 2)
 });
+```
+
+### Retries & reliability
+
+Idempotent requests (`GET`, `DELETE`) are retried automatically on transient
+failures — network errors, timeouts, and `408`/`409`/`429`/`5xx` responses —
+using exponential backoff with jitter. Non-idempotent requests such as order
+placement are **never** retried automatically, so a network blip cannot submit a
+duplicate order. Set `maxRetries: 0` to disable retries.
+
+Every request sends a `User-Agent` and a generated `poly-correlation-id` so
+failures can be traced. The correlation id is attached to raised errors:
+
+```typescript
+import { APIError } from 'polymarket-us';
+
+try {
+  await client.account.balances();
+} catch (error) {
+  if (error instanceof APIError) {
+    console.error(error.status, error.message, error.requestId);
+  }
+}
 ```
 
 ### WebSocket (Real-Time Data)

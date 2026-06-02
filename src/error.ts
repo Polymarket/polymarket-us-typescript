@@ -5,49 +5,69 @@ export class PolymarketUSError extends Error {
   }
 }
 
+export interface APIErrorOptions {
+  code?: string;
+  /** Correlation id for tracing the request server-side. */
+  requestId?: string;
+  /** Parsed response body, when available. */
+  body?: unknown;
+}
+
 export class APIError extends PolymarketUSError {
   readonly status: number;
   readonly code?: string;
+  readonly requestId?: string;
+  readonly body?: unknown;
 
-  constructor(status: number, message: string, code?: string) {
+  constructor(status: number, message: string, options: APIErrorOptions = {}) {
     super(message);
     this.name = 'APIError';
     this.status = status;
-    this.code = code;
+    this.code = options.code;
+    this.requestId = options.requestId;
+    this.body = options.body;
   }
 }
 
+type SubclassOptions = Omit<APIErrorOptions, 'code'>;
+
 export class AuthenticationError extends APIError {
-  constructor(message: string = 'Authentication failed') {
-    super(401, message, 'authentication_error');
+  constructor(
+    message = 'Authentication failed',
+    options: SubclassOptions = {},
+  ) {
+    super(401, message, { ...options, code: 'authentication_error' });
     this.name = 'AuthenticationError';
   }
 }
 
 export class BadRequestError extends APIError {
-  constructor(message: string = 'Bad request') {
-    super(400, message, 'bad_request');
+  constructor(message = 'Bad request', options: SubclassOptions = {}) {
+    super(400, message, { ...options, code: 'bad_request' });
     this.name = 'BadRequestError';
   }
 }
 
 export class NotFoundError extends APIError {
-  constructor(message: string = 'Resource not found') {
-    super(404, message, 'not_found');
+  constructor(message = 'Resource not found', options: SubclassOptions = {}) {
+    super(404, message, { ...options, code: 'not_found' });
     this.name = 'NotFoundError';
   }
 }
 
 export class RateLimitError extends APIError {
-  constructor(message: string = 'Rate limit exceeded') {
-    super(429, message, 'rate_limit_exceeded');
+  constructor(message = 'Rate limit exceeded', options: SubclassOptions = {}) {
+    super(429, message, { ...options, code: 'rate_limit_exceeded' });
     this.name = 'RateLimitError';
   }
 }
 
 export class InternalServerError extends APIError {
-  constructor(message: string = 'Internal server error') {
-    super(500, message, 'internal_server_error');
+  constructor(
+    message = 'Internal server error',
+    options: SubclassOptions = {},
+  ) {
+    super(500, message, { ...options, code: 'internal_server_error' });
     this.name = 'InternalServerError';
   }
 }

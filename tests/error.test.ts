@@ -17,13 +17,19 @@ describe('Error Classes', () => {
     expect(error.name).toBe('PolymarketUSError');
   });
 
-  test('APIError should have status and code', () => {
-    const error = new APIError(400, 'bad request', 'invalid_param');
+  test('APIError should have status, code, requestId, and body', () => {
+    const error = new APIError(400, 'bad request', {
+      code: 'invalid_param',
+      requestId: 'req-123',
+      body: { detail: 'nope' },
+    });
     expect(error).toBeInstanceOf(PolymarketUSError);
     expect(error).toBeInstanceOf(APIError);
     expect(error.status).toBe(400);
     expect(error.code).toBe('invalid_param');
     expect(error.message).toBe('bad request');
+    expect(error.requestId).toBe('req-123');
+    expect(error.body).toEqual({ detail: 'nope' });
   });
 
   test('AuthenticationError should have status 401', () => {
