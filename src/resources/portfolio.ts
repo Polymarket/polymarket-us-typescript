@@ -1,5 +1,7 @@
+import { paginateCursor } from '../pagination';
 import { APIResource } from '../resource';
 import type {
+  Activity,
   GetActivitiesParams,
   GetActivitiesResponse,
   GetUserPositionsParams,
@@ -23,5 +25,17 @@ export class Portfolio extends APIResource {
       query: params,
       authenticated: true,
     });
+  }
+
+  /** Iterate over all activities, following the cursor across pages. */
+  iterateActivities(params?: GetActivitiesParams): AsyncGenerator<Activity> {
+    return paginateCursor<Activity>(
+      (cursor) =>
+        this.client.get<Record<string, unknown>>('/v1/portfolio/activities', {
+          query: { ...params, ...(cursor ? { cursor } : {}) },
+          authenticated: true,
+        }),
+      'activities',
+    );
   }
 }

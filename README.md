@@ -82,6 +82,24 @@ const activities = await client.portfolio.activities();
 const balances = await client.account.balances();
 ```
 
+## Pagination
+
+List endpoints expose `iterate()` async generators that transparently page
+through all results. Offset-paginated resources (`events`, `markets`, `series`)
+and the cursor-paginated activity feed are both supported:
+
+```typescript
+// Offset-paginated resources
+for await (const market of client.markets.iterate({ active: true })) {
+  console.log(market.slug);
+}
+
+// Cursor-paginated activity history (authenticated)
+for await (const activity of client.portfolio.iterateActivities()) {
+  console.log(activity.type);
+}
+```
+
 ## Authentication
 
 Polymarket US uses Ed25519 signature authentication. Generate API keys at [polymarket.us/developer](https://polymarket.us/developer).
