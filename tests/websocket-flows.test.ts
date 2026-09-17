@@ -20,7 +20,7 @@ describe('WebSocket Message Flows', () => {
 
       const message = {
         requestId: 'req-1',
-        subscriptionType: 'SUBSCRIPTION_TYPE_ORDER',
+        subscriptionType: 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT',
         orderSubscriptionSnapshot: {
           orders: [{ id: 'order-1', status: 'OPEN' }],
           eof: true,
@@ -125,7 +125,7 @@ describe('WebSocket Message Flows', () => {
 
       const message = {
         requestId: 'req-1',
-        subscriptionType: 'SUBSCRIPTION_TYPE_ORDER',
+        subscriptionType: 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT',
         orderSubscriptionSnapshot: { orders: [], eof: true },
       };
 
