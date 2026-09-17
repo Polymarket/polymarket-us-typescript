@@ -133,6 +133,10 @@ const client = new PolymarketUS({
 
 ### WebSocket (Real-Time Data)
 
+`subscribeOrders()` subscribes to live order updates. Request a one-shot snapshot
+of open orders separately with `SUBSCRIPTION_TYPE_ORDER_SNAPSHOT` and its own
+request ID.
+
 ```typescript
 import { PolymarketUS } from 'polymarket-us';
 
@@ -162,6 +166,7 @@ privateWs.on('error', (error) => {
 
 await privateWs.connect();
 privateWs.subscribeOrders('order-sub-1');
+privateWs.subscribe('order-snapshot-1', 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT');
 privateWs.subscribePositions('pos-sub-1');
 privateWs.subscribeAccountBalance('balance-sub-1');
 

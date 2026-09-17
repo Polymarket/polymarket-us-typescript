@@ -2,6 +2,7 @@ import type { Amount, Execution, Order, UserPosition } from '../types';
 
 export type PrivateSubscriptionType =
   | 'SUBSCRIPTION_TYPE_ORDER'
+  | 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT'
   | 'SUBSCRIPTION_TYPE_POSITION'
   | 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
 
@@ -28,7 +29,7 @@ export type WebSocketRequest = SubscribeRequest | UnsubscribeRequest;
 
 export interface OrderSnapshot {
   requestId: string;
-  subscriptionType: 'SUBSCRIPTION_TYPE_ORDER';
+  subscriptionType: 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT';
   orderSubscriptionSnapshot: {
     orders: Order[];
     eof: boolean;
