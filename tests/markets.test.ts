@@ -1,4 +1,11 @@
-import { PolymarketUS } from '../src';
+import {
+  type GetMarketBBOResponse,
+  type GetMarketBookResponse,
+  type MarketBBO,
+  type MarketBook,
+  type MarketSettlement,
+  PolymarketUS,
+} from '../src';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as jest.Mock;
@@ -72,79 +79,119 @@ describe('Markets Endpoints', () => {
   });
 
   describe('markets.book()', () => {
-    test('should get order book', async () => {
+    const books: GetMarketBookResponse[] = [
+      {
+        marketData: {
+          marketSlug: 'btc-100k',
+          bids: [{ px: { value: '0.55', currency: 'USD' }, qty: '100' }],
+          offers: [{ px: { value: '0.56', currency: 'USD' }, qty: '80' }],
+          state: 'MARKET_STATE_OPEN',
+          stats: { lastTradePx: { value: '0.55', currency: 'USD' } },
+          transactTime: '2026-09-21T00:00:00Z',
+        },
+      },
+      {
+        marketData: {
+          marketSlug: 'btc-100k',
+          bids: [],
+          offers: [],
+          state: 'MARKET_STATE_CLOSED',
+          stats: null,
+          transactTime: null,
+        },
+      },
+    ];
+
+    test.each(
+      books,
+    )('preserves the order book response envelope: %j', async (wire) => {
       mockFetch.mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            marketSlug: 'btc-100k',
-            bids: [{ px: { value: '0.55', currency: 'USD' }, qty: '100' }],
-            offers: [{ px: { value: '0.56', currency: 'USD' }, qty: '80' }],
-            state: 'MARKET_STATE_OPEN',
-          }),
-          { status: 200 },
-        ),
+        new Response(JSON.stringify(wire), { status: 200 }),
       );
 
-      const book = await client.markets.book('btc-100k');
+      const response: GetMarketBookResponse =
+        await client.markets.book('btc-100k');
+      const book: MarketBook = response.marketData;
 
+      expect(response).toEqual(wire);
       expect(book.marketSlug).toBe('btc-100k');
-      expect(book.bids).toBeDefined();
-      expect(book.offers).toBeDefined();
-    });
-
-    test('should use correct path', async () => {
-      mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({ bids: [], offers: [] }), { status: 200 }),
+      expect(book.bids).toEqual(wire.marketData.bids);
+      expect(book.offers).toEqual(wire.marketData.offers);
+      expect(book.stats?.lastTradePx?.value).toBe(
+        wire.marketData.stats?.lastTradePx?.value,
       );
-
-      await client.markets.book('test-market');
-
-      const url = mockFetch.mock.calls[0][0];
-      expect(url).toContain('/v1/markets/test-market/book');
+      expect(mockFetch.mock.calls[0][0]).toContain('/v1/markets/btc-100k/book');
     });
   });
 
   describe('markets.bbo()', () => {
-    test('should get best bid/offer', async () => {
+    const quotes: GetMarketBBOResponse[] = [
+      {
+        marketData: {
+          marketSlug: 'btc-100k',
+          bestBid: { value: '0.55', currency: 'USD' },
+          bestAsk: { value: '0.56', currency: 'USD' },
+          bidDepth: 1,
+          askDepth: 1,
+          lastTradePx: { value: '0.55', currency: 'USD' },
+          sharesTraded: '100',
+          openInterest: '80',
+        },
+      },
+      {
+        marketData: {
+          marketSlug: 'btc-100k',
+          bestBid: null,
+          bestAsk: null,
+          bidDepth: 0,
+          askDepth: 0,
+          lastTradePx: null,
+          sharesTraded: '',
+          openInterest: '',
+        },
+      },
+    ];
+
+    test.each(
+      quotes,
+    )('preserves the BBO response envelope: %j', async (wire) => {
       mockFetch.mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            marketSlug: 'btc-100k',
-            bestBid: { value: '0.55', currency: 'USD' },
-            bestAsk: { value: '0.56', currency: 'USD' },
-          }),
-          { status: 200 },
-        ),
+        new Response(JSON.stringify(wire), { status: 200 }),
       );
 
-      const bbo = await client.markets.bbo('btc-100k');
+      const response: GetMarketBBOResponse =
+        await client.markets.bbo('btc-100k');
+      const bbo: MarketBBO = response.marketData;
 
-      expect(bbo.bestBid).toBeDefined();
-      expect(bbo.bestAsk).toBeDefined();
-    });
-
-    test('should use correct path', async () => {
-      mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 }),
-      );
-
-      await client.markets.bbo('test-market');
-
-      const url = mockFetch.mock.calls[0][0];
-      expect(url).toContain('/v1/markets/test-market/bbo');
+      expect(response).toEqual(wire);
+      expect(bbo.marketSlug).toBe('btc-100k');
+      expect(bbo.bestBid?.value).toBe(wire.marketData.bestBid?.value);
+      expect(bbo.bestAsk?.value).toBe(wire.marketData.bestAsk?.value);
+      expect(mockFetch.mock.calls[0][0]).toContain('/v1/markets/btc-100k/bbo');
     });
   });
 
   describe('markets.settlement()', () => {
-    test('should use correct path', async () => {
+    test.each([
+      0, 0.5, 1,
+    ])('preserves a numeric settlement of %s', async (value) => {
+      const wire: MarketSettlement = {
+        slug: 'settled-market',
+        settlement: value,
+      };
       mockFetch.mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 }),
+        new Response(JSON.stringify(wire), { status: 200 }),
       );
 
-      await client.markets.settlement('settled-market');
+      const response = await client.markets.settlement('settled-market');
+      const settlement: number = response.settlement;
 
-      const url = mockFetch.mock.calls[0][0];
-      expect(url).toContain('/v1/markets/settled-market/settlement');
+      expect(response).toEqual(wire);
+      expect(response.slug).toBe('settled-market');
+      expect(settlement).toBe(value);
+      expect(mockFetch.mock.calls[0][0]).toContain(
+        '/v1/markets/settled-market/settlement',
+      );
     });
   });
 });

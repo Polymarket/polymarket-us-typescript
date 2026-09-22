@@ -211,6 +211,24 @@ marketsWs.close();
 | `markets.bbo(slug)` | Get best bid/offer |
 | `markets.settlement(slug)` | Get settlement price |
 
+#### Market response type migration
+
+The corrected declarations match the existing API responses; runtime behavior is
+unchanged. Read book and BBO fields through `marketData`:
+
+```typescript
+const { marketData: book } = await client.markets.book('btc-100k');
+const { marketData: bbo } = await client.markets.bbo('btc-100k');
+console.log(book.bids, bbo.bestBid?.value);
+
+const { slug, settlement } = await client.markets.settlement('btc-100k');
+console.log(slug, settlement);
+```
+
+Settlement uses `slug` and numeric `settlement`, replacing the old
+`marketSlug`, `settlementPrice`, and `settledAt` declarations. Book `stats` and
+`transactTime`, and BBO `bestBid`, `bestAsk`, and `lastTradePx`, can be `null`.
+
 ### Orders (Authenticated)
 
 | Method | Description |

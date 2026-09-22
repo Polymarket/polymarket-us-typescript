@@ -38,8 +38,8 @@ export interface MarketBook {
   bids: OrderBookLevel[];
   offers: OrderBookLevel[];
   state: MarketState;
-  stats?: MarketStats;
-  transactTime?: string;
+  stats?: MarketStats | null;
+  transactTime?: string | null;
 }
 
 export interface MarketStats {
@@ -52,22 +52,22 @@ export interface MarketStats {
 
 export interface MarketBBO {
   marketSlug: string;
-  bestBid?: Amount;
-  bestAsk?: Amount;
+  bestBid?: Amount | null;
+  bestAsk?: Amount | null;
   bidDepth?: number;
   askDepth?: number;
-  lastTradePx?: Amount;
+  lastTradePx?: Amount | null;
   sharesTraded?: string;
   openInterest?: string;
 }
 
 export interface MarketSettlement {
-  marketSlug: string;
-  settlementPrice: Amount;
-  settledAt: string;
+  slug: string;
+  settlement: number;
 }
 
 export type MarketState =
+  | 'MARKET_STATE_CLOSED'
   | 'MARKET_STATE_OPEN'
   | 'MARKET_STATE_PREOPEN'
   | 'MARKET_STATE_SUSPENDED'
@@ -99,4 +99,12 @@ export interface GetMarketsResponse {
 
 export interface GetMarketResponse {
   market: MarketDetail;
+}
+
+export interface GetMarketBookResponse {
+  marketData: MarketBook;
+}
+
+export interface GetMarketBBOResponse {
+  marketData: MarketBBO;
 }
