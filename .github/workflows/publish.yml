@@ -9,15 +9,13 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
-      id-token: write
+      contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GH_PAT }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@c5ba7f7862a0f64c1b1a05fbac13e0b8e86ba08c # v4
@@ -35,36 +33,33 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Configure Git
+      - name: Read package metadata
+        id: package
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          echo "name=$(node -p "require('./package.json').name")" >> "$GITHUB_OUTPUT"
+          echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
 
-      - name: Determine version bump type
-        id: version
+      - name: Check npm
+        id: registry
         run: |
-          COMMIT_MSG=$(git log -1 --pretty=%B)
-          if echo "$COMMIT_MSG" | grep -iq "^feat!:\|BREAKING CHANGE"; then
-            echo "bump=major" >> $GITHUB_OUTPUT
-          elif echo "$COMMIT_MSG" | grep -iq "^feat:"; then
-            echo "bump=minor" >> $GITHUB_OUTPUT
-          else
-            echo "bump=patch" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Bump version
-        run: |
-          npm version ${{ steps.version.outputs.bump }} --no-git-tag-version
-          NEW_VERSION=$(node -p "require('./package.json').version")
-          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
-
-      - name: Commit and push version bump
-        run: |
-          git add package.json
-          git commit -m "chore: bump version to ${{ env.NEW_VERSION }} [skip ci]"
-          git push
+          status=$(curl --silent --show-error --output /dev/null --write-out "%{http_code}" \
+            "https://registry.npmjs.org/${{ steps.package.outputs.name }}/${{ steps.package.outputs.version }}")
+          case "$status" in
+            200)
+              echo "publish=false" >> "$GITHUB_OUTPUT"
+              echo "${{ steps.package.outputs.name }}@${{ steps.package.outputs.version }} is already published"
+              ;;
+            404)
+              echo "publish=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "Unexpected npm registry response: HTTP $status" >&2
+              exit 1
+              ;;
+          esac
 
       - name: Publish to npm
+        if: steps.registry.outputs.publish == 'true'
         run: pnpm publish --no-git-checks
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
