@@ -57,8 +57,7 @@ pnpm lint:fix
 
 ## Publishing
 
-Releases are automated via GitHub Actions. When a PR is merged to `main`, the CI will automatically publish to npm based on conventional commit messages:
-
-- `feat!:` or `BREAKING CHANGE` → major version bump
-- `feat:` → minor version bump
-- All other commits → patch version bump
+Releases are published by GitHub Actions from the version in `package.json`.
+Include the intended semantic version bump in the pull request so it is reviewed
+with the release. After merge, the workflow publishes that exact version if it
+is not already on npm. Commit messages do not change the package version.
