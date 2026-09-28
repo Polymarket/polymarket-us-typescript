@@ -357,7 +357,7 @@ describe('PrivateWebSocket callback contracts', () => {
     ]);
   });
 
-  test('exposes typed combo legs without filling absent or null fields', () => {
+  test('exposes typed position metadata without filling absent or null fields', () => {
     const leg: ComboLegDetail = {
       slug: 'leg-1',
       icon: '',
@@ -375,7 +375,22 @@ describe('PrivateWebSocket callback contracts', () => {
     const settledLeg: ComboLegDetail = {
       ...leg,
       teamId: 0,
-      team: { id: 0, name: 'Team one' },
+      team: {
+        id: 0,
+        name: 'Team one',
+        providerId: 0,
+        ordering: '',
+        longIcon: 'long.svg',
+        shortIcon: 'short.svg',
+        displayAbbreviation: 'ONE',
+        ranking: '0',
+        conference: '',
+        providerIds: [{ provider: 'PROVIDER_GRID', providerId: 'team-1' }],
+        longIconDark: 'long-dark.svg',
+        shortIconDark: 'short-dark.svg',
+        color: { light: '#ffffff', dark: '#000000' },
+        imageDisplayType: 'IMAGE_DISPLAY_TYPE_LOGO',
+      },
       subject: { id: 0, name: 'Player one', subjectType: 'player' },
       eventStartTime: '2026-09-28T18:00:00Z',
       indicativePrice: { value: '1', currency: 'USD' },
@@ -386,10 +401,12 @@ describe('PrivateWebSocket callback contracts', () => {
       state: 'COMBO_LEG_STATE_WON',
     };
     const legs: ComboLegDetail[] = [];
+    const metadata: Array<UserPosition['marketMetadata']> = [];
     ws.on('positionUpdate', (data) => {
       if ('positionSubscription' in data) {
         const after = data.positionSubscription.afterPosition;
         if (after?.comboLegDetails) legs.push(...after.comboLegDetails);
+        if (after) metadata.push(after.marketMetadata);
       }
     });
 
@@ -398,18 +415,38 @@ describe('PrivateWebSocket callback contracts', () => {
         ...positionUpdate,
         positionSubscription: {
           ...positionUpdate.positionSubscription,
-          afterPosition: { ...position, comboLegDetails: [leg, settledLeg] },
+          afterPosition: {
+            ...position,
+            comboLegDetails: [leg, settledLeg],
+            marketMetadata: {
+              slug: 'market-1',
+              eventId: 'event-id-1',
+              team: settledLeg.team,
+              subject: settledLeg.subject,
+            },
+          },
         },
       } satisfies PositionUpdate),
     );
 
     expect(legs).toEqual([leg, settledLeg]);
     expect(legs[0]).not.toHaveProperty('settlement');
+    expect(legs[0]).not.toHaveProperty('team');
     expect(legs[0].indicativePrice).toBeNull();
     expect(legs[1].subject?.subjectType).toBe('player');
     expect(legs[1].team?.id).toBe(0);
+    expect(legs[1].team?.providerId).toBe(0);
+    expect(legs[1].team?.ranking).toBe('0');
+    expect(legs[1].team?.providerIds?.[0].providerId).toBe('team-1');
+    expect(legs[1].team?.providerIds?.[0].provider).toBe('PROVIDER_GRID');
+    expect(legs[1].team?.color?.dark).toBe('#000000');
+    expect(legs[1].team?.imageDisplayType).toBe('IMAGE_DISPLAY_TYPE_LOGO');
     expect(legs[1].settlement?.settlementPrice.value).toBe('1');
     expect(legs[1].settlement?.settlementSetTime).toBeNull();
+    expect(metadata[0]?.eventId).toBe('event-id-1');
+    expect(metadata[0]?.team?.providerIds?.[0].providerId).toBe('team-1');
+    expect(metadata[0]?.team?.ranking).toBe('0');
+    expect(metadata[0]?.subject?.name).toBe('Player one');
   });
 
   const legacyCases: {

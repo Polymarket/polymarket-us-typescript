@@ -26,7 +26,51 @@ export interface Team {
   homeIcon?: string;
   awayIcon?: string;
   colorPrimary?: string;
+  providerId?: number;
+  ordering?: string;
+  longIcon?: string;
+  shortIcon?: string;
+  displayAbbreviation?: string;
+  ranking?: string;
+  conference?: string;
+  providerIds?: MarketTeamProvider[];
+  longIconDark?: string;
+  shortIconDark?: string;
+  color?: ResolvedColor;
+  imageDisplayType?: ImageDisplayType;
 }
+
+export type MarketProvider =
+  | 'PROVIDER_UNSPECIFIED'
+  | 'PROVIDER_SPORTSDATAIO'
+  | 'PROVIDER_SPORTRADAR'
+  | 'PROVIDER_OPTICODDS'
+  | 'PROVIDER_PANDASCORE'
+  | 'PROVIDER_INFRONT'
+  | 'PROVIDER_ENETPULSE'
+  | 'PROVIDER_UFC'
+  | 'PROVIDER_ODDSPAPI'
+  | 'PROVIDER_BETER'
+  | 'PROVIDER_CHAMPION_DATA'
+  | 'PROVIDER_ALTSPORTSDATA'
+  | 'PROVIDER_GRID';
+
+export interface MarketTeamProvider {
+  provider: MarketProvider;
+  providerId: string;
+}
+
+export interface ResolvedColor {
+  light: string;
+  dark: string;
+}
+
+export type ImageDisplayType =
+  | 'IMAGE_DISPLAY_TYPE_UNSPECIFIED'
+  | 'IMAGE_DISPLAY_TYPE_HEADSHOT'
+  | 'IMAGE_DISPLAY_TYPE_LOGO'
+  | 'IMAGE_DISPLAY_TYPE_FLAG'
+  | 'IMAGE_DISPLAY_TYPE_ARTWORK';
 
 export interface Subject {
   id: number;
