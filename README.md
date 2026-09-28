@@ -298,7 +298,8 @@ Settlement uses `slug` and numeric `settlement`, replacing the old
 | `portfolio.activities(params?)` | Get activity history |
 
 Activity trades expose `qtyDecimal` as an exact decimal string alongside the
-legacy `qty` field.
+legacy `qty` field. Import `PortfolioTrade` for this type; `Trade` describes
+market WebSocket trade messages.
 
 ### Account (Authenticated)
 

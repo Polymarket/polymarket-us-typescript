@@ -13,6 +13,7 @@ export {
 } from './error';
 
 export * from './types';
+export type { Trade as PortfolioTrade } from './types/portfolio';
 
 export {
   type AccountBalanceSnapshot,
