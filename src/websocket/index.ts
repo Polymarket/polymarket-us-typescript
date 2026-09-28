@@ -18,6 +18,8 @@ export type {
   PositionUpdate,
   PrivateMessage,
   PrivateSubscriptionType,
+  RFQEvent,
+  RFQEventPayload,
   SubscribeRequest,
   Trade,
   UnsubscribeRequest,

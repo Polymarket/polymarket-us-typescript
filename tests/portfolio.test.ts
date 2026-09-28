@@ -1,4 +1,4 @@
-import { AuthenticationError, PolymarketUS } from '../src';
+import { type Activity, AuthenticationError, PolymarketUS } from '../src';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as jest.Mock;
@@ -59,6 +59,33 @@ describe('Portfolio Endpoints', () => {
   });
 
   describe('portfolio.activities()', () => {
+    test('preserves exact trade quantities alongside legacy quantities', async () => {
+      const activity: Activity = {
+        type: 'ACTIVITY_TYPE_TRADE',
+        trade: {
+          id: 'trade-1',
+          marketSlug: 'market-1',
+          state: 'TRADE_STATE_CONFIRMED',
+          price: { value: '0.5', currency: 'USD' },
+          qty: '0',
+          qtyDecimal: '0.0100',
+        },
+      };
+      mockFetch.mockResolvedValueOnce(
+        new Response(JSON.stringify({ activities: [activity] }), {
+          status: 200,
+        }),
+      );
+
+      const response = await authClient.portfolio.activities();
+      const quantity: string | undefined =
+        response.activities[0].trade?.qtyDecimal;
+
+      expect(quantity).toBe('0.0100');
+      expect(response.activities[0].trade?.qty).toBe('0');
+      expect(response.activities[0]).toEqual(activity);
+    });
+
     test('should require authentication', async () => {
       await expect(client.portfolio.activities()).rejects.toThrow(
         AuthenticationError,

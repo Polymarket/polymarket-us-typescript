@@ -33,6 +33,8 @@ export {
   type PrivateMessage,
   type PrivateSubscriptionType,
   PrivateWebSocket,
+  type RFQEvent,
+  type RFQEventPayload,
   type Trade,
   type WebSocketErrorMessage,
   type WebSocketOptions,

@@ -12,6 +12,7 @@ import type {
   PositionUpdate,
   PrivateMessage,
   PrivateSubscriptionType,
+  RFQEvent,
 } from './types';
 
 type PrivateEventTypes = {
@@ -27,6 +28,7 @@ type PrivateEventTypes = {
   accountBalanceUpdate: (
     data: AccountBalanceUpdate | LegacyAccountBalanceUpdate,
   ) => void;
+  rfqEvent: (data: RFQEvent) => void;
   heartbeat: () => void;
   error: (error: PolymarketUSError | WebSocketError) => void;
   close: () => void;
@@ -47,6 +49,10 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
 
   subscribeAccountBalance(requestId: string): void {
     this.subscribe(requestId, 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE');
+  }
+
+  subscribeRFQ(requestId: string): void {
+    this.subscribe(requestId, 'SUBSCRIPTION_TYPE_RFQ');
   }
 
   subscribeAll(
@@ -110,6 +116,8 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
       'accountBalanceUpdate' in message
     ) {
       this._emit('accountBalanceUpdate', message);
+    } else if ('rfqEvent' in message) {
+      this._emit('rfqEvent', message);
     }
   }
 
