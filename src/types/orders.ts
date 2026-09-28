@@ -1,7 +1,12 @@
 import type { Amount } from './common';
+import type { Subject, Team } from './markets';
 
 export type OrderType = 'ORDER_TYPE_LIMIT' | 'ORDER_TYPE_MARKET';
 export type OrderSide = 'ORDER_SIDE_BUY' | 'ORDER_SIDE_SELL';
+export type OutcomeSide =
+  | 'OUTCOME_SIDE_UNSPECIFIED'
+  | 'OUTCOME_SIDE_YES'
+  | 'OUTCOME_SIDE_NO';
 export type OrderIntent =
   | 'ORDER_INTENT_BUY_LONG'
   | 'ORDER_INTENT_SELL_LONG'
@@ -50,14 +55,9 @@ export interface MarketMetadata {
   outcome?: string;
   eventSlug?: string;
   teamId?: number;
-  team?: {
-    id: number;
-    name: string;
-    abbreviation?: string;
-    league?: string;
-    record?: string;
-    logo?: string;
-  };
+  team?: Team;
+  subject?: Subject;
+  eventId?: string;
 }
 
 export interface Order {

@@ -157,7 +157,23 @@ privateWs.on('orderUpdate', (data) => {
 });
 
 privateWs.on('positionUpdate', (data) => {
-  console.log('Position changed:', data.positionSubscriptionUpdate);
+  if ('positionSubscription' in data) {
+    const { beforePosition, afterPosition } = data.positionSubscription;
+    console.log('Position changed:', beforePosition, afterPosition);
+  }
+});
+
+privateWs.on('accountBalanceSnapshot', (data) => {
+  if ('accountBalancesSnapshot' in data) {
+    console.log('Balances:', data.accountBalancesSnapshot.balances);
+  }
+});
+
+privateWs.on('accountBalanceUpdate', (data) => {
+  if ('accountBalancesUpdate' in data) {
+    const change = data.accountBalancesUpdate.balanceChange;
+    console.log('Balance changed:', change.afterBalance?.buyingPower);
+  }
 });
 
 privateWs.on('error', (error) => {
@@ -189,6 +205,32 @@ marketsWs.subscribeTrades('trade-sub-1', ['btc-100k-2025']);
 marketsWs.unsubscribe('md-sub-1');
 marketsWs.close();
 ```
+
+#### Private WebSocket callback migration
+
+Position and balance updates now reach `positionUpdate` and
+`accountBalanceUpdate`. The SDK forwards each original message without renaming
+its fields. Read positions from `positionSubscription.beforePosition` and
+`afterPosition`, balances from `accountBalancesSnapshot.balances`, and balance
+changes from `accountBalancesUpdate.balanceChange`.
+
+Position quantities are available as exact decimal strings such as
+`netPositionDecimal`, alongside cost/fee fields and `comboLegDetails`. Balance
+reservation and display fields, such as `displayedCash`, are absent when the
+gateway cannot determine them; a present `0` is distinct from an absent value.
+
+These corrected declarations are a breaking type change in 2.0.0. The previous
+`positionSubscriptionUpdate`, `positionUpdate`,
+`accountBalanceSubscriptionSnapshot`, `accountBalanceSubscriptionUpdate`, and
+`accountBalanceUpdate` aliases still dispatch unchanged; their types are exported
+as `LegacyPositionUpdate`, `LegacyAccountBalanceSnapshot`, and
+`LegacyAccountBalanceUpdate`. Narrow by the envelope key as above. Before/after
+positions and balances, timestamps, position cost, cash value, and market
+metadata can be `null`.
+
+Position subscriptions deliver changes without an initial snapshot. Use
+`client.portfolio.positions()` for current positions; the legacy
+`positionSnapshot` callback remains available for older messages.
 
 ## API Reference
 
@@ -285,7 +327,7 @@ Settlement uses `slug` and numeric `settlement`, replacing the old
 **Private WebSocket Events:**
 - `orderSnapshot` - Initial orders snapshot
 - `orderUpdate` - Order execution updates
-- `positionSnapshot` - Initial positions snapshot
+- `positionSnapshot` - Legacy snapshot event; the current gateway sends no position snapshot
 - `positionUpdate` - Position changes
 - `accountBalanceSnapshot` - Initial balance
 - `accountBalanceUpdate` - Balance changes

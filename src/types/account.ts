@@ -1,7 +1,7 @@
 export interface UserBalance {
   currentBalance: number;
   currency: string;
-  lastUpdated?: string;
+  lastUpdated?: string | null;
   buyingPower: number;
   assetNotional?: number;
   assetAvailable?: number;
@@ -11,6 +11,13 @@ export interface UserBalance {
   pendingWithdrawals?: PendingWithdrawal[];
   marginRequirement?: number;
   balanceReservation?: number;
+  depositReservation?: number;
+  bonusReservation?: number;
+  displayedBonus?: number;
+  displayedAvailableSoon?: number;
+  displayedCash?: number;
+  availableToWithdraw?: number;
+  bonusHold?: number;
 }
 
 export interface PendingWithdrawal {
@@ -20,7 +27,7 @@ export interface PendingWithdrawal {
   description?: string;
   acknowledged?: boolean;
   bankId?: string;
-  creationTime?: string;
+  creationTime?: string | null;
   destinationAccountName?: string;
 }
 
