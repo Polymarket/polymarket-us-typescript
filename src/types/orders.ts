@@ -2,6 +2,10 @@ import type { Amount } from './common';
 
 export type OrderType = 'ORDER_TYPE_LIMIT' | 'ORDER_TYPE_MARKET';
 export type OrderSide = 'ORDER_SIDE_BUY' | 'ORDER_SIDE_SELL';
+export type OutcomeSide =
+  | 'OUTCOME_SIDE_UNSPECIFIED'
+  | 'OUTCOME_SIDE_YES'
+  | 'OUTCOME_SIDE_NO';
 export type OrderIntent =
   | 'ORDER_INTENT_BUY_LONG'
   | 'ORDER_INTENT_SELL_LONG'

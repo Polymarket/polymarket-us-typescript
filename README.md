@@ -214,6 +214,11 @@ its fields. Read positions from `positionSubscription.beforePosition` and
 `afterPosition`, balances from `accountBalancesSnapshot.balances`, and balance
 changes from `accountBalancesUpdate.balanceChange`.
 
+Position quantities are available as exact decimal strings such as
+`netPositionDecimal`, alongside cost/fee fields and `comboLegDetails`. Balance
+reservation and display fields, such as `displayedCash`, are absent when the
+gateway cannot determine them; a present `0` is distinct from an absent value.
+
 These corrected declarations are a breaking type change in 2.0.0. The previous
 `positionSubscriptionUpdate`, `positionUpdate`,
 `accountBalanceSubscriptionSnapshot`, `accountBalanceSubscriptionUpdate`, and

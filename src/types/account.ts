@@ -11,6 +11,13 @@ export interface UserBalance {
   pendingWithdrawals?: PendingWithdrawal[];
   marginRequirement?: number;
   balanceReservation?: number;
+  depositReservation?: number;
+  bonusReservation?: number;
+  displayedBonus?: number;
+  displayedAvailableSoon?: number;
+  displayedCash?: number;
+  availableToWithdraw?: number;
+  bonusHold?: number;
 }
 
 export interface PendingWithdrawal {

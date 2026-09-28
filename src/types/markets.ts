@@ -28,6 +28,20 @@ export interface Team {
   colorPrimary?: string;
 }
 
+export interface Subject {
+  id: number;
+  name: string;
+  displayName?: string;
+  description?: string;
+  subjectType: string;
+  image?: string;
+  color?: string;
+  darkColor?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  slug?: string;
+}
+
 export interface OrderBookLevel {
   px: Amount;
   qty: string;

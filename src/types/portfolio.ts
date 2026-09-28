@@ -1,3 +1,4 @@
+import type { ComboLegDetail } from './combos';
 import type { Amount } from './common';
 import type { MarketMetadata } from './orders';
 
@@ -13,6 +14,17 @@ export interface UserPosition {
   marketMetadata?: MarketMetadata | null;
   cashValue?: Amount | null;
   qtyAvailable?: string;
+  avgPx?: Amount | null;
+  fees?: Amount | null;
+  baseCost?: Amount | null;
+  costPerShare?: Amount | null;
+  netPositionDecimal?: string;
+  qtyBoughtDecimal?: string;
+  qtySoldDecimal?: string;
+  bodPositionDecimal?: string;
+  qtyAvailableDecimal?: string;
+  comboLegDetails?: ComboLegDetail[];
+  positionId?: string;
 }
 
 export interface GetUserPositionsParams {
