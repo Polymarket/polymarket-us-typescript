@@ -3,6 +3,9 @@ import { BaseWebSocket, type WebSocketOptions } from './base';
 import type {
   AccountBalanceSnapshot,
   AccountBalanceUpdate,
+  LegacyAccountBalanceSnapshot,
+  LegacyAccountBalanceUpdate,
+  LegacyPositionUpdate,
   OrderSnapshot,
   OrderUpdate,
   PositionSnapshot,
@@ -17,9 +20,13 @@ type PrivateEventTypes = {
   orderSnapshot: (data: OrderSnapshot) => void;
   orderUpdate: (data: OrderUpdate) => void;
   positionSnapshot: (data: PositionSnapshot) => void;
-  positionUpdate: (data: PositionUpdate) => void;
-  accountBalanceSnapshot: (data: AccountBalanceSnapshot) => void;
-  accountBalanceUpdate: (data: AccountBalanceUpdate) => void;
+  positionUpdate: (data: PositionUpdate | LegacyPositionUpdate) => void;
+  accountBalanceSnapshot: (
+    data: AccountBalanceSnapshot | LegacyAccountBalanceSnapshot,
+  ) => void;
+  accountBalanceUpdate: (
+    data: AccountBalanceUpdate | LegacyAccountBalanceUpdate,
+  ) => void;
   heartbeat: () => void;
   error: (error: PolymarketUSError | WebSocketError) => void;
   close: () => void;
@@ -69,7 +76,7 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
       return;
     }
 
-    if ('error' in message) {
+    if ('error' in message && message.error) {
       this._emit('error', new WebSocketError(message.error, message.requestId));
       return;
     }
@@ -87,20 +94,22 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
     ) {
       this._emit('positionSnapshot', message as PositionSnapshot);
     } else if (
+      'positionSubscription' in message ||
       'positionSubscriptionUpdate' in message ||
       'positionUpdate' in message
     ) {
-      this._emit('positionUpdate', message as PositionUpdate);
+      this._emit('positionUpdate', message);
     } else if (
       'accountBalanceSubscriptionSnapshot' in message ||
       'accountBalancesSnapshot' in message
     ) {
-      this._emit('accountBalanceSnapshot', message as AccountBalanceSnapshot);
+      this._emit('accountBalanceSnapshot', message);
     } else if (
+      'accountBalancesUpdate' in message ||
       'accountBalanceSubscriptionUpdate' in message ||
       'accountBalanceUpdate' in message
     ) {
-      this._emit('accountBalanceUpdate', message as AccountBalanceUpdate);
+      this._emit('accountBalanceUpdate', message);
     }
   }
 

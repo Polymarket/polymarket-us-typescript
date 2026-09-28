@@ -5,13 +5,13 @@ export interface UserPosition {
   netPosition: string;
   qtyBought: string;
   qtySold: string;
-  cost: Amount;
+  cost: Amount | null;
   realized: Amount;
   bodPosition: string;
   expired: boolean;
-  updateTime?: string;
-  marketMetadata?: MarketMetadata;
-  cashValue?: Amount;
+  updateTime?: string | null;
+  marketMetadata?: MarketMetadata | null;
+  cashValue?: Amount | null;
   qtyAvailable?: string;
 }
 

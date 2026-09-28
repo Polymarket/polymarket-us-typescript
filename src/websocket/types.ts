@@ -1,4 +1,11 @@
-import type { Amount, Execution, Order, UserPosition } from '../types';
+import type {
+  Amount,
+  Execution,
+  GetAccountBalancesResponse,
+  Order,
+  UserBalance,
+  UserPosition,
+} from '../types';
 
 export type PrivateSubscriptionType =
   | 'SUBSCRIPTION_TYPE_ORDER'
@@ -56,29 +63,75 @@ export interface PositionSnapshot {
 export interface PositionUpdate {
   requestId: string;
   subscriptionType: 'SUBSCRIPTION_TYPE_POSITION';
-  positionSubscriptionUpdate: {
-    marketSlug: string;
-    position: UserPosition;
+  positionSubscription: {
+    beforePosition: UserPosition | null;
+    afterPosition: UserPosition | null;
+    updateTime: string | null;
+    entryType: string;
+    tradeId: string;
+    referenceId: string;
+    description: string;
+    allocationGroupId: string;
+    transferReferenceTradeIds: string[];
+    shortTransfer: boolean;
+    updateTradeDate: string | null;
   };
 }
 
 export interface AccountBalanceSnapshot {
   requestId: string;
   subscriptionType: 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
-  accountBalanceSubscriptionSnapshot: {
-    balance: number;
-    buyingPower: number;
-  };
+  accountBalancesSnapshot: GetAccountBalancesResponse;
 }
 
 export interface AccountBalanceUpdate {
   requestId: string;
   subscriptionType: 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
-  accountBalanceSubscriptionUpdate: {
-    balance: number;
-    buyingPower: number;
+  accountBalancesUpdate: {
+    balanceChange: {
+      beforeBalance: UserBalance | null;
+      afterBalance: UserBalance | null;
+      description: string;
+      updateTime: string | null;
+      modifiedSecurityId: string;
+      entryType: string;
+      accountName: string;
+      id: string;
+    };
   };
 }
+
+interface LegacyPosition {
+  marketSlug: string;
+  position: UserPosition;
+}
+
+export type LegacyPositionUpdate = {
+  requestId: string;
+  subscriptionType: 'SUBSCRIPTION_TYPE_POSITION';
+} & (
+  | { positionSubscriptionUpdate: LegacyPosition }
+  | { positionUpdate: LegacyPosition }
+);
+
+interface LegacyAccountBalance {
+  balance: number;
+  buyingPower: number;
+}
+
+export interface LegacyAccountBalanceSnapshot {
+  requestId: string;
+  subscriptionType: 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
+  accountBalanceSubscriptionSnapshot: LegacyAccountBalance;
+}
+
+export type LegacyAccountBalanceUpdate = {
+  requestId: string;
+  subscriptionType: 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
+} & (
+  | { accountBalanceSubscriptionUpdate: LegacyAccountBalance }
+  | { accountBalanceUpdate: LegacyAccountBalance }
+);
 
 export interface MarketData {
   requestId: string;
@@ -137,8 +190,11 @@ export type PrivateMessage =
   | OrderUpdate
   | PositionSnapshot
   | PositionUpdate
+  | LegacyPositionUpdate
   | AccountBalanceSnapshot
   | AccountBalanceUpdate
+  | LegacyAccountBalanceSnapshot
+  | LegacyAccountBalanceUpdate
   | Heartbeat
   | WebSocketErrorMessage;
 
