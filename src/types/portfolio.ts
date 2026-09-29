@@ -65,6 +65,7 @@ export interface Trade {
   updateTime?: string;
   price: Amount;
   qty: string;
+  qtyDecimal?: string;
   isAggressor?: boolean;
   costBasis?: Amount;
   realizedPnl?: Amount;

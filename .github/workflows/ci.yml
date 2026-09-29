@@ -58,6 +58,8 @@ jobs:
 
       - run: pnpm build
 
+      - run: pnpm typecheck:package
+
   test:
     runs-on: ubuntu-latest
     steps:

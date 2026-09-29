@@ -3,6 +3,8 @@ import type {
   Execution,
   GetAccountBalancesResponse,
   Order,
+  Quote,
+  RFQ,
   UserBalance,
   UserPosition,
 } from '../types';
@@ -11,7 +13,8 @@ export type PrivateSubscriptionType =
   | 'SUBSCRIPTION_TYPE_ORDER'
   | 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT'
   | 'SUBSCRIPTION_TYPE_POSITION'
-  | 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE';
+  | 'SUBSCRIPTION_TYPE_ACCOUNT_BALANCE'
+  | 'SUBSCRIPTION_TYPE_RFQ';
 
 export type MarketSubscriptionType =
   | 'SUBSCRIPTION_TYPE_MARKET_DATA'
@@ -133,6 +136,33 @@ export type LegacyAccountBalanceUpdate = {
   | { accountBalanceUpdate: LegacyAccountBalance }
 );
 
+export interface RFQEventPayload {
+  rfqCreated?: { rfq: RFQ | null };
+  rfqClosed?: { rfq: RFQ | null };
+  quoteCreated?: { quote: Quote | null };
+  quoteDeleted?: { quote: Quote | null };
+  quoteAccepted?: {
+    quote: Quote | null;
+    confirmationDeadline: string | null;
+  };
+  quoteConfirmed?: {
+    quote: Quote | null;
+    executionDeadline: string | null;
+  };
+  quoteExecuted?: {
+    quote: Quote | null;
+    orderId: string;
+    clientOrderId: string;
+    executedTime: string | null;
+  };
+}
+
+export interface RFQEvent {
+  requestId: string;
+  subscriptionType: 'SUBSCRIPTION_TYPE_RFQ';
+  rfqEvent: RFQEventPayload;
+}
+
 export interface MarketData {
   requestId: string;
   subscriptionType: 'SUBSCRIPTION_TYPE_MARKET_DATA';
@@ -195,6 +225,7 @@ export type PrivateMessage =
   | AccountBalanceUpdate
   | LegacyAccountBalanceSnapshot
   | LegacyAccountBalanceUpdate
+  | RFQEvent
   | Heartbeat
   | WebSocketErrorMessage;
 

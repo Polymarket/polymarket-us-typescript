@@ -145,7 +145,7 @@ const client = new PolymarketUS({
   secretKey: process.env.POLYMARKET_SECRET_KEY,
 });
 
-// Private WebSocket (orders, positions, balances)
+// Private WebSocket (orders, positions, balances, RFQs)
 const privateWs = client.ws.private();
 
 privateWs.on('orderSnapshot', (data) => {
@@ -180,11 +180,17 @@ privateWs.on('error', (error) => {
   console.error('WebSocket error:', error);
 });
 
+privateWs.on('rfqEvent', (data) => {
+  const quote = data.rfqEvent.quoteCreated?.quote;
+  if (quote) console.log('Quote created:', quote.id, quote.buyPrice);
+});
+
 await privateWs.connect();
 privateWs.subscribeOrders('order-sub-1');
 privateWs.subscribe('order-snapshot-1', 'SUBSCRIPTION_TYPE_ORDER_SNAPSHOT');
 privateWs.subscribePositions('pos-sub-1');
 privateWs.subscribeAccountBalance('balance-sub-1');
+privateWs.subscribeRFQ('rfq-sub-1');
 
 // Markets WebSocket (order book, trades)
 const marketsWs = client.ws.markets();
@@ -291,6 +297,10 @@ Settlement uses `slug` and numeric `settlement`, replacing the old
 | `portfolio.positions(params?)` | Get trading positions |
 | `portfolio.activities(params?)` | Get activity history |
 
+Activity trades expose `qtyDecimal` as an exact decimal string alongside the
+legacy `qty` field. Import `PortfolioTrade` for this type; `Trade` describes
+market WebSocket trade messages.
+
 ### Account (Authenticated)
 
 | Method | Description |
@@ -331,6 +341,7 @@ Settlement uses `slug` and numeric `settlement`, replacing the old
 - `positionUpdate` - Position changes
 - `accountBalanceSnapshot` - Initial balance
 - `accountBalanceUpdate` - Balance changes
+- `rfqEvent` - RFQ and quote lifecycle events
 - `heartbeat` - Connection keepalive
 - `error` - Error events
 - `close` - Connection closed

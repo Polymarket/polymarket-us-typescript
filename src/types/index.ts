@@ -5,6 +5,7 @@ export * from './events';
 export * from './markets';
 export * from './orders';
 export * from './portfolio';
+export * from './rfq';
 export * from './search';
 export * from './series';
 export * from './sports';
