@@ -54,10 +54,12 @@ export class InternalServerError extends APIError {
 
 export class WebSocketError extends PolymarketUSError {
   readonly requestId?: string;
+  readonly subscriptionType?: string;
 
-  constructor(message: string, requestId?: string) {
+  constructor(message: string, requestId?: string, subscriptionType?: string) {
     super(message);
     this.name = 'WebSocketError';
     this.requestId = requestId;
+    this.subscriptionType = subscriptionType;
   }
 }

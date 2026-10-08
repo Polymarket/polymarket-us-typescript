@@ -1,6 +1,6 @@
 {
   "name": "polymarket-us",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Polymarket US TypeScript SDK",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -20,7 +20,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "typecheck:package": "tsc --noEmit --strict --skipLibCheck --module Node16 --moduleResolution Node16 type-tests/portfolio-trade.cts type-tests/portfolio-trade.mts",
+    "typecheck:package": "tsc --noEmit --strict --skipLibCheck --module Node16 --moduleResolution Node16 type-tests/portfolio-trade.cts type-tests/portfolio-trade.mts type-tests/websocket-error.cts type-tests/websocket-error.mts",
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "lint": "biome check .",

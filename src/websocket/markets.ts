@@ -68,7 +68,14 @@ export class MarketsWebSocket extends BaseWebSocket<MarketEventTypes> {
     }
 
     if ('error' in message) {
-      this._emit('error', new WebSocketError(message.error, message.requestId));
+      this._emit(
+        'error',
+        new WebSocketError(
+          message.error,
+          message.requestId,
+          message.subscriptionType,
+        ),
+      );
       return;
     }
 
