@@ -6,6 +6,7 @@ import {
   NotFoundError,
   PolymarketUSError,
   RateLimitError,
+  WebSocketError,
 } from '../src';
 
 describe('Error Classes', () => {
@@ -81,5 +82,50 @@ describe('Error Classes', () => {
     expect(() => {
       throw error;
     }).toThrow(PolymarketUSError);
+  });
+});
+
+describe('WebSocketError', () => {
+  test.each([
+    [
+      'message only',
+      new WebSocketError('subscription failed'),
+      undefined,
+      undefined,
+    ],
+    [
+      'request ID',
+      new WebSocketError('subscription failed', 'request-1'),
+      'request-1',
+      undefined,
+    ],
+    [
+      'subscription context',
+      new WebSocketError(
+        'subscription failed',
+        'request-1',
+        'SUBSCRIPTION_TYPE_TRADE',
+      ),
+      'request-1',
+      'SUBSCRIPTION_TYPE_TRADE',
+    ],
+    [
+      'context without request ID',
+      new WebSocketError(
+        'subscription failed',
+        undefined,
+        'SUBSCRIPTION_TYPE_FUTURE',
+      ),
+      undefined,
+      'SUBSCRIPTION_TYPE_FUTURE',
+    ],
+  ])('preserves error behavior with %s', (_name, error, requestId, subscriptionType) => {
+    expect(error).toBeInstanceOf(Error);
+    expect(error).toBeInstanceOf(PolymarketUSError);
+    expect(error).toBeInstanceOf(WebSocketError);
+    expect(error.name).toBe('WebSocketError');
+    expect(error.message).toBe('subscription failed');
+    expect(error.requestId).toBe(requestId);
+    expect(error.subscriptionType).toBe(subscriptionType);
   });
 });

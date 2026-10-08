@@ -138,7 +138,7 @@ of open orders separately with `SUBSCRIPTION_TYPE_ORDER_SNAPSHOT` and its own
 request ID.
 
 ```typescript
-import { PolymarketUS } from 'polymarket-us';
+import { PolymarketUS, WebSocketError } from 'polymarket-us';
 
 const client = new PolymarketUS({
   keyId: process.env.POLYMARKET_KEY_ID,
@@ -178,6 +178,13 @@ privateWs.on('accountBalanceUpdate', (data) => {
 
 privateWs.on('error', (error) => {
   console.error('WebSocket error:', error);
+  if (error instanceof WebSocketError) {
+    console.error(
+      'Subscription context:',
+      error.requestId,
+      error.subscriptionType,
+    );
+  }
 });
 
 privateWs.on('rfqEvent', (data) => {

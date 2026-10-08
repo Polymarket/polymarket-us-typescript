@@ -212,6 +212,7 @@ export interface Heartbeat {
 
 export interface WebSocketErrorMessage {
   requestId?: string;
+  subscriptionType?: string;
   error: string;
 }
 

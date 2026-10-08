@@ -83,7 +83,14 @@ export class PrivateWebSocket extends BaseWebSocket<PrivateEventTypes> {
     }
 
     if ('error' in message && message.error) {
-      this._emit('error', new WebSocketError(message.error, message.requestId));
+      this._emit(
+        'error',
+        new WebSocketError(
+          message.error,
+          message.requestId,
+          message.subscriptionType,
+        ),
+      );
       return;
     }
 
