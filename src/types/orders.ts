@@ -43,6 +43,7 @@ export type ManualOrderIndicator =
   | 'MANUAL_ORDER_INDICATOR_AUTOMATIC';
 
 export interface SlippageTolerance {
+  /** Selected-outcome reference: NO for short intents, unlike the YES price field. */
   currentPrice: Amount;
   bips?: number;
   ticks?: number;
@@ -65,6 +66,7 @@ export interface Order {
   marketSlug: string;
   side: OrderSide;
   type: OrderType;
+  /** Exchange YES price, including NO orders. */
   price: Amount;
   quantity: number;
   cumQuantity: number;
@@ -74,6 +76,7 @@ export interface Order {
   intent: OrderIntent;
   marketMetadata?: MarketMetadata;
   state: OrderState;
+  /** Average exchange YES fill price, including NO orders. */
   avgPx?: Amount;
   cashOrderQty?: Amount;
   insertTime?: string;
@@ -101,7 +104,10 @@ export interface CreateOrderParams {
   marketSlug: string;
   intent: OrderIntent;
   type?: OrderType;
+  /** YES price for every intent. For NO at X, send 1 - X. */
   price?: Amount;
+  /** Explicit YES-price confirmation for enrolled users; never converts price. */
+  priceIsYes?: boolean;
   quantity?: number;
   tif?: TimeInForce;
   participateDontInitiate?: boolean;
@@ -120,7 +126,10 @@ export interface CreateOrderResponse {
 
 export interface ModifyOrderParams {
   marketSlug: string;
+  /** Replacement YES price, including NO orders. */
   price?: Amount;
+  /** Required on every modify for enrolled users, including YES orders. */
+  priceIsYes?: boolean;
   quantity?: number;
   tif?: TimeInForce;
   participateDontInitiate?: boolean;
