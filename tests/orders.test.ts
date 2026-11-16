@@ -1,4 +1,9 @@
-import { AuthenticationError, PolymarketUS } from '../src';
+import {
+  AuthenticationError,
+  type CreateOrderParams,
+  type ModifyOrderParams,
+  PolymarketUS,
+} from '../src';
 
 const mockFetch = jest.fn();
 global.fetch = mockFetch as jest.Mock;
@@ -176,6 +181,42 @@ describe('Orders Endpoints', () => {
 
       const url = mockFetch.mock.calls[0][0];
       expect(url).toContain('/v1/orders/open/cancel');
+    });
+  });
+  describe('YES-price confirmation', () => {
+    test.each([
+      true,
+      false,
+      undefined,
+    ])('forwards %s without changing prices', async (confirmation) => {
+      const order: CreateOrderParams = {
+        marketSlug: 'test',
+        intent: 'ORDER_INTENT_BUY_SHORT' as const,
+        price: { value: '0.95', currency: 'USD' },
+        ...(confirmation === undefined ? {} : { priceIsYes: confirmation }),
+      };
+      const modify: ModifyOrderParams = {
+        marketSlug: order.marketSlug,
+        price: order.price,
+        ...(confirmation === undefined ? {} : { priceIsYes: confirmation }),
+      };
+      const calls = [
+        { send: () => authClient.orders.create(order), body: order },
+        {
+          send: () => authClient.orders.modify('original', modify),
+          body: modify,
+        },
+        {
+          send: () => authClient.orders.preview({ request: order }),
+          body: { request: order },
+        },
+      ];
+      for (const { send, body } of calls) {
+        mockFetch.mockResolvedValueOnce(new Response('{}', { status: 200 }));
+        await send();
+        const options = mockFetch.mock.calls.at(-1)?.[1] as RequestInit;
+        expect(JSON.parse(options.body as string)).toEqual(body);
+      }
     });
   });
 });
